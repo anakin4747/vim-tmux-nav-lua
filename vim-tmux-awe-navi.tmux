@@ -9,6 +9,7 @@ tmux_move () {
     [[ "$1" =~ ^[hjkl]$ ]] && TMUX_DIR=$(tr 'hjkl' 'LDUR' <<< "$1") || exit 1
     tmux if-shell "$is_vim" "send-keys M-$1" "select-pane -$TMUX_DIR"
 }
+export -f tmux_move
 
 # tmux bind-key -n M-h if-shell "$is_vim" "send-keys M-h" "select-pane -L"
 # tmux bind-key -n M-j if-shell "$is_vim" "send-keys M-j" "select-pane -D"
