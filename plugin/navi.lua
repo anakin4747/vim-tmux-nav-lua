@@ -13,8 +13,6 @@ do -- Initial checks
         )
         return
     end
-
-    -- TODO: Figure out lowest supported version number
 end
 
 Loaded = true
@@ -31,13 +29,13 @@ local key_to_dir = {
 -- Functions for interacting with tmux
 -- @section tmux_helpers
 
---- get number of tmux panes
+--- Get number of tmux panes
 -- @return number of tmux panes or zero if exec fails
 local function num_of_tmux_panes ()
     return tonumber(vim.fn.system("tmux list-panes -F '#{pane_id}' | wc -l") or 0)
 end
 
---- vim key to tmux direction
+--- Vim key to tmux direction
 -- @param char The vim key to be translated
 -- @return tmux direction character
 local function tr (char)
@@ -46,21 +44,21 @@ local function tr (char)
     )
 end
 
---- get the tmux socket from $TMUX
+--- Get the tmux socket from $TMUX
 -- @return first field of $TMUX delimited on commas
 local function tmux_socket ()
     return os.getenv("TMUX"):match("([^,]+)")
 end
 
---- execute a tmux command
+--- Execute a tmux command
 -- @param args Arguments to pass to tmux command
 local function tmux_cmd (args)
-    return vim.fn.system("tmux -S " .. tmux_socket() .. ' ' .. args)
+    vim.fn.system("tmux -S " .. tmux_socket() .. ' ' .. args)
 end
 
----  Navigates windows in Vim or Tmux.
---  @param args.key The key associated with the direction to navigate to
---  @param args.vim_mode Boolean to determine whether the navigation is vim or tmux
+--- Navigates windows in Vim or Tmux.
+-- @param args.key The key associated with the direction to navigate to
+-- @param args.vim_mode Boolean to determine whether the navigation is vim or tmux
 function Navigate (args)
     assert(args.key ~= nil, "no key provided")
     assert(key_to_dir[args.key] ~= nil, "key not valid")
