@@ -1,4 +1,4 @@
-local debug = true
+local debug = false
 
 do -- Initial checks
     if Loaded and not debug then
