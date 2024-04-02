@@ -20,8 +20,6 @@ end
 
 loaded_navigator = 1
 
-
-
 local function num_of_tmux_panes ()
     return tonumber(vim.fn.system("tmux list-panes -F '#{pane_id}' | wc -l") or 0)
 end
@@ -31,7 +29,6 @@ end
 --  @param args.key The key associated with the direction to navigate to
 --  @param args.vim_mode Boolean to determine whether the navigation is vim or tmux
 function Navigate (args)
-
     assert(args.key ~= nil, "no key provided")
     assert(string.find("hjklp", args.key), "key not valid")
 
@@ -75,22 +72,15 @@ local key_to_direction = {
     p = 'prev'
 }
 
+-- Create commands for all directions
 for key, direction in pairs(key_to_direction) do
     vim.cmd(
         "command! Navigate" .. direction ..
         " lua Navigate { key = '" .. key .. "'," ..
         " vim_mode = " .. tostring(vim_mode) .. " }"
     )
+    vim.api.nvim_set_keymap(
+        "n", "<M-" .. key .. ">", ":<C-U>Navigate" .. direction .. "<cr>",
+        { noremap = true, silent = true }
+    )
 end
-
--- Create commands for all directions
--- vim.cmd("command! NavigateLeft lua Navigate { direction = 'h', vim_mode = "
---     .. tostring(vim_mode) .. " }")
--- vim.cmd("command! NavigateDown lua Navigate { direction = 'j', vim_mode = "
---     .. tostring(vim_mode) .. " }")
--- vim.cmd("command! NavigateUp lua Navigate { direction = 'k', vim_mode = "
---     .. tostring(vim_mode) .. " }")
--- vim.cmd("command! NavigateRight lua Navigate { direction = 'l', vim_mode = "
---     .. tostring(vim_mode) .. " }")
--- vim.cmd("command! NavigatePrev lua Navigate { direction = 'p', vim_mode = "
---     .. tostring(vim_mode) .. " }")
