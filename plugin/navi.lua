@@ -58,8 +58,7 @@ local function tmux_cmd (args)
     return vim.fn.system("tmux -S " .. tmux_socket() .. ' ' .. args)
 end
 
--------------
---  Navigates windows in Vim or Tmux.
+---  Navigates windows in Vim or Tmux.
 --  @param args.key The key associated with the direction to navigate to
 --  @param args.vim_mode Boolean to determine whether the navigation is vim or tmux
 function Navigate (args)
@@ -88,11 +87,11 @@ function Navigate (args)
     end
 
     -- tmux navigation
-    local tmux_args = 'if -F "#{pane_at_' .. key_to_dir[args.key] ..
-        '}" "" "' .. 'select-pane -t ' .. os.getenv("TMUX_PANE") .. ' -' ..
+    tmux_cmd(
+        'if -F "#{pane_at_' .. key_to_dir[args.key] .. '}" "" "' ..
+        'select-pane -t ' .. os.getenv("TMUX_PANE") .. ' -' ..
         tr(args.key) .. '"'
-
-    tmux_cmd(tmux_args)
+    )
 end
 
 -- Assume vim_mode based on $TMUX
