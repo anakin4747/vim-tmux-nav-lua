@@ -1,8 +1,7 @@
-
 local debug = true
 
 do -- Initial checks
-    if loaded_navigator ~= nil and debug == false then
+    if Loaded and not debug then
         vim.notify('vim-tmux-navi-lua already loaded', vim.log.levels.WARN)
         return
     end
@@ -18,10 +17,45 @@ do -- Initial checks
     -- TODO: Figure out lowest supported version number
 end
 
-loaded_navigator = 1
+Loaded = true
 
+local key_to_dir = {
+    h = 'left',
+    j = 'bottom', -- tmux specific naming
+    k = 'top', -- tmux specific naming
+    l = 'right',
+    p = 'prev'
+}
+
+--- Tmux helper functions.
+-- Functions for interacting with tmux
+-- @section tmux_helpers
+
+--- get number of tmux panes
+-- @return number of tmux panes or zero if exec fails
 local function num_of_tmux_panes ()
     return tonumber(vim.fn.system("tmux list-panes -F '#{pane_id}' | wc -l") or 0)
+end
+
+--- vim key to tmux direction
+-- @param char The vim key to be translated
+-- @return tmux direction character
+local function tr (char)
+    return string.gsub(
+        char, "[phjkl]", { p = "l", h = "L", j = "D", k = "U", l = "R" }
+    )
+end
+
+--- get the tmux socket from $TMUX
+-- @return first field of $TMUX delimited on commas
+local function tmux_socket ()
+    return os.getenv("TMUX"):match("([^,]+)")
+end
+
+--- execute a tmux command
+-- @param args Arguments to pass to tmux command
+local function tmux_cmd (args)
+    return vim.fn.system("tmux -S " .. tmux_socket() .. ' ' .. args)
 end
 
 -------------
@@ -30,7 +64,7 @@ end
 --  @param args.vim_mode Boolean to determine whether the navigation is vim or tmux
 function Navigate (args)
     assert(args.key ~= nil, "no key provided")
-    assert(string.find("hjklp", args.key), "key not valid")
+    assert(key_to_dir[args.key] ~= nil, "key not valid")
 
     -- vim navigation
     if args.vim_mode or num_of_tmux_panes() == 1 then
@@ -54,33 +88,26 @@ function Navigate (args)
     end
 
     -- tmux navigation
-    vim.notify("TMUX TMUX")
+    local tmux_args = 'if -F "#{pane_at_' .. key_to_dir[args.key] ..
+        '}" "" "' .. 'select-pane -t ' .. os.getenv("TMUX_PANE") .. ' -' ..
+        tr(args.key) .. '"'
+
+    tmux_cmd(tmux_args)
 end
 
--- Set vim_mode based on $TMUX
+-- Assume vim_mode based on $TMUX
 local tmux_string = os.getenv("TMUX")
 local vim_mode = false
 if tmux_string == '' or tmux_string == nil then
-    vim_mode = true
+    vim_mode = true -- not in tmux session
 end
 
-local key_to_direction = {
-    h = 'left',
-    j = 'bottom', -- tmux specific naming
-    k = 'top', -- tmux specific naming
-    l = 'right',
-    p = 'prev'
-}
-
--- Create commands for all directions
-for key, direction in pairs(key_to_direction) do
-    vim.cmd(
-        "command! Navigate" .. direction ..
-        " lua Navigate { key = '" .. key .. "'," ..
-        " vim_mode = " .. tostring(vim_mode) .. " }"
-    )
+-- Create keybindings for all directions
+for key, _ in pairs(key_to_dir) do
+    local command = ":<C-U>lua Navigate { key = '" .. key .. "'," ..
+        " vim_mode = " .. tostring(vim_mode) .. " }<cr>"
     vim.api.nvim_set_keymap(
-        "n", "<M-" .. key .. ">", ":<C-U>Navigate" .. direction .. "<cr>",
+        "n", "<M-" .. key .. ">", command,
         { noremap = true, silent = true }
     )
 end
