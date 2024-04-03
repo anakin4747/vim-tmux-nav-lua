@@ -6,8 +6,27 @@ is_vim="ps -o state= -o comm= -t '#{pane_tty}' \
     | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|l?n?vim?x?|fzf)(diff)?$'"
 
 tmux_move () {
-    [[ "$1" =~ ^[hjkl]$ ]] && TMUX_DIR=$(tr 'hjkl' 'LDUR' <<< "$1") || exit 1
-    tmux if-shell "$is_vim" "send-keys M-$1" "select-pane -$TMUX_DIR"
+
+    case "$1" in
+        h)
+            TMUX_DIR=L && TMUX_POSITION=left
+            ;;
+        j)
+            TMUX_DIR=D && TMUX_POSITION=bottom
+            ;;
+        k)
+            TMUX_DIR=U && TMUX_POSITION=top
+            ;;
+        l)
+            TMUX_DIR=R && TMUX_POSITION=right
+            ;;
+        *)
+            exit
+    esac
+
+    tmux if-shell "$is_vim" "send-keys M-$1" {
+        if -F "#{pane_at_$TMUX_POSITION}" "" "select-pane -t $TMUX_PANE -$TMUX_DIR"
+    }
 }
 
 tmux bind-key -n M-h if-shell "$is_vim" "send-keys M-h" "select-pane -L"
@@ -24,11 +43,8 @@ tmux bind-key -n M-l if-shell "$is_vim" "send-keys M-l" "select-pane -R"
 # tmux if-shell -b '[ "$(echo "$tmux_version >= 3.0" | bc)" = 1 ]' \
 #   "bind-key -n 'M-\\' if-shell \"$is_vim\" 'send-keys M-\\\\'  'select-pane -l'"
 #
-# tmux bind-key -T copy-mode-vi M-h select-pane -L
-# tmux bind-key -T copy-mode-vi M-j select-pane -D
-# tmux bind-key -T copy-mode-vi M-k select-pane -U
-# tmux bind-key -T copy-mode-vi M-l select-pane -R
-# tmux bind-key -T copy-mode-vi M-\\ select-pane -l
-
-# instead of binding keys we need to expose functions for awesome to call to
-# move around
+tmux bind-key -T copy-mode-vi M-h select-pane -L
+tmux bind-key -T copy-mode-vi M-j select-pane -D
+tmux bind-key -T copy-mode-vi M-k select-pane -U
+tmux bind-key -T copy-mode-vi M-l select-pane -R
+tmux bind-key -T copy-mode-vi M-\\ select-pane -l
