@@ -24,14 +24,14 @@ tmux_move () {
             exit
     esac
 
-    tmux if-shell "$is_vim" "send-keys M-$1" "if -F \"#{pane_at_$TMUX_POSITION}\" \"\" \"select-pane -t $TMUX_PANE -$TMUX_DIR\""
-    
+    tmux if-shell "$is_vim" "send-keys -t $TMUX_PANE M-$1" \
+        "if -F '#{pane_at_$TMUX_POSITION}' '' 'select-pane -t $TMUX_PANE -$TMUX_DIR'"
 }
 
-tmux bind-key -n M-h if-shell "$is_vim" "send-keys M-h" "select-pane -L"
-tmux bind-key -n M-j if-shell "$is_vim" "send-keys M-j" "select-pane -D"
-tmux bind-key -n M-k if-shell "$is_vim" "send-keys M-k" "select-pane -U"
-tmux bind-key -n M-l if-shell "$is_vim" "send-keys M-l" "select-pane -R"
+# tmux bind-key -n M-h if-shell "$is_vim" "send-keys M-h" "select-pane -L"
+# tmux bind-key -n M-j if-shell "$is_vim" "send-keys M-j" "select-pane -D"
+# tmux bind-key -n M-k if-shell "$is_vim" "send-keys M-k" "select-pane -U"
+# tmux bind-key -n M-l if-shell "$is_vim" "send-keys M-l" "select-pane -R"
 # tmux_version="$(tmux -V | sed -En "$version_pat")"
 # tmux setenv -g tmux_version "$tmux_version"
 #
