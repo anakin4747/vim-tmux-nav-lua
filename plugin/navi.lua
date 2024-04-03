@@ -29,12 +29,6 @@ local key_to_dir = {
 -- Functions for interacting with tmux
 -- @section tmux_helpers
 
---- Get number of tmux panes
--- @return number of tmux panes or zero if exec fails
-local function num_of_tmux_panes ()
-    return tonumber(vim.fn.system("tmux list-panes -F '#{pane_id}' | wc -l") or 0)
-end
-
 --- Vim key to tmux direction
 -- @param char The vim key to be translated
 -- @return tmux direction character
@@ -64,7 +58,7 @@ function Navigate (args)
     assert(key_to_dir[args.key] ~= nil, "key not valid")
 
     -- vim navigation
-    if args.vim_mode or num_of_tmux_panes() == 1 then
+    if args.vim_mode then
         local status, err = pcall(
             vim.api.nvim_command, "wincmd " .. args.key
         )
