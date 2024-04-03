@@ -24,9 +24,8 @@ tmux_move () {
             exit
     esac
 
-    tmux if-shell "$is_vim" "send-keys M-$1" {
-        if -F "#{pane_at_$TMUX_POSITION}" "" "select-pane -t $TMUX_PANE -$TMUX_DIR"
-    }
+    tmux if-shell "$is_vim" "send-keys M-$1" "if -F \"#{pane_at_$TMUX_POSITION}\" \"\" \"select-pane -t $TMUX_PANE -$TMUX_DIR\""
+    
 }
 
 tmux bind-key -n M-h if-shell "$is_vim" "send-keys M-h" "select-pane -L"
