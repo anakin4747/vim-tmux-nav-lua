@@ -18,25 +18,18 @@ end
 Loaded = true
 
 local key_to_dir = {
-    h = 'left',
-    j = 'bottom', -- tmux specific naming
-    k = 'top', -- tmux specific naming
-    l = 'right',
-    p = 'prev'
+    h = { -- keys - vim key
+        'L',    -- tmux key
+        'left'  -- tmux direction
+    },
+    j = { 'D', 'bottom' },
+    k = { 'U', 'top' },
+    l = { 'R', 'right' },
 }
 
 --- Tmux helper functions.
 -- Functions for interacting with tmux
 -- @section tmux_helpers
-
---- Vim key to tmux direction
--- @param char The vim key to be translated
--- @return tmux direction character
-local function tr (char)
-    return string.gsub(
-        char, "[phjkl]", { p = "l", h = "L", j = "D", k = "U", l = "R" }
-    )
-end
 
 --- Get the tmux socket from $TMUX
 -- @return first field of $TMUX delimited on commas
@@ -80,9 +73,9 @@ function Navigate (args)
 
     -- tmux navigation
     tmux_cmd(
-        'if -F "#{pane_at_' .. key_to_dir[args.key] .. '}" "" "' ..
+        'if -F "#{pane_at_' .. key_to_dir[args.key][2] .. '}" "" "' ..
         'select-pane -t ' .. os.getenv("TMUX_PANE") .. ' -' ..
-        tr(args.key) .. '"'
+        key_to_dir[args.key][1] .. '"'
     )
 end
 
